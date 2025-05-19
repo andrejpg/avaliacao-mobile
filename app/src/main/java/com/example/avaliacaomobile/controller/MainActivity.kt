@@ -6,21 +6,18 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.SearchView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.avaliacaomobile.R
-import com.example.avaliacaomobile.data.dao.CarDAO
-import com.example.avaliacaomobile.model.Car
-import java.util.ArrayList
+import com.example.avaliacaomobile.data.dao.CarModelDAO
+import com.example.avaliacaomobile.model.CarModel
 
 class MainActivity : AppCompatActivity() {
-    lateinit var carsListView: ListView
-    lateinit var listAdapter: ArrayAdapter<String>
-    lateinit var carsList: ArrayList<String>
+    lateinit var listView: ListView
+    lateinit var carDAO: CarModelDAO
     lateinit var searchView: SearchView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,46 +30,47 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        carsListView = findViewById(R.id.listView)
         searchView = findViewById(R.id.searchView)
 
-        carsList = ArrayList()
-        carsList.add("Honda HR-V")
-        carsList.add("Renault Kwid")
-        carsList.add("Volskwagen Polo")
-        listAdapter = ArrayAdapter<String>(
-            this,
-            android.R.layout.simple_list_item_1,
-            carsList
-        )
-        carsListView.adapter = listAdapter
+        listView = findViewById(R.id.listView)
+        carDAO = CarModelDAO(this)
 
-        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (carsList.contains(query)) {
-                    listAdapter.filter.filter(query)
-                } else {
-                    Toast.makeText(this@MainActivity, "Sem resultados.", Toast.LENGTH_LONG).show()
-                }
-                return false
-            }
+        listCars()
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                listAdapter.filter.filter(newText)
-                return false
+        listView.setOnItemClickListener { parent, view, position, id ->
+            val selectedCar = parent.getItemAtPosition(position) as CarModel
+            val intent = Intent(this, DetailActivity::class.java).apply {
+                putExtra("carId", selectedCar.id)
             }
-        })
+            startActivity(intent)
+        }
+
+//        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+//            override fun onQueryTextSubmit(query: String?): Boolean {
+//                if (listView.contains(query)) {
+//                    listAdapter.filter.filter(query)
+//                } else {
+//                    Toast.makeText(this@MainActivity, "Sem resultados.", Toast.LENGTH_LONG).show()
+//                }
+//                return false
+//            }
+//
+//            override fun onQueryTextChange(newText: String?): Boolean {
+//                listAdapter.filter.filter(newText)
+//                return false
+//            }
+//        })
     }
 
     private fun listCars() {
-        val cars = CarDAO.getAllCars()
+        val cars = carDAO.getAllCarModels()
         if(cars.isEmpty()) {
-            carsListView.visibility = ListView.GONE
+            listView.visibility = ListView.GONE
         } else {
-            carsListView.visibility = ListView.VISIBLE
-            val adapter: ArrayAdapter<Car> = ArrayAdapter(this,
+            listView.visibility = ListView.VISIBLE
+            val adapter: ArrayAdapter<CarModel> = ArrayAdapter(this,
                 android.R.layout.simple_list_item_1, cars)
-            carsListView.adapter = adapter
+            listView.adapter = adapter
         }
     }
 
