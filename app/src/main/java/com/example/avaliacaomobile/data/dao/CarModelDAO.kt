@@ -36,5 +36,39 @@ class CarModelDAO (private val context: Context) {
     cursor.close()
     db.close()
     return charList
-}
+    }
+
+    fun getCarModelById(id: Int): CarModel? {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(DBHelper.TABLE_NAME, null, "id = ?", arrayOf(id.toString()), null, null, null)
+        var carModel: CarModel? = null
+        if (cursor.moveToFirst()) {
+            val marca = cursor.getString(cursor.getColumnIndexOrThrow("marca"))
+            val modelo = cursor.getString(cursor.getColumnIndexOrThrow("modelo"))
+            val ano = cursor.getString(cursor.getColumnIndexOrThrow("ano"))
+            carModel = CarModel(id, marca, modelo, ano)
+        }
+        cursor.close()
+        db.close()
+        return carModel
+    }
+
+    fun updateCarModel(carModel: CarModel): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("marca", carModel.marca)
+            put("modelo", carModel.modelo)
+            put("ano", carModel.ano)
+    }
+        val rowsAffected = db.update(DBHelper.TABLE_NAME, values, "id = ?", arrayOf(carModel.id.toString()))
+        db.close()
+        return rowsAffected
+    }
+
+    fun deleteCarModel(id: Int): Int {
+        val db = dbHelper.writableDatabase
+        val rowsDeleted = db.delete(DBHelper.TABLE_NAME, "id = ?", arrayOf(id.toString()))
+        db.close()
+        return rowsDeleted
+    }
 }
