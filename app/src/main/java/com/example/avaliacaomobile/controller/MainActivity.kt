@@ -1,15 +1,20 @@
 package com.example.avaliacaomobile.controller
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.SearchView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.avaliacaomobile.R
+import com.example.avaliacaomobile.data.dao.CarDAO
+import com.example.avaliacaomobile.model.Car
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
@@ -57,5 +62,27 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
         })
+    }
+
+    private fun listCars() {
+        val cars = CarDAO.getAllCars()
+        if(cars.isEmpty()) {
+            carsListView.visibility = ListView.GONE
+        } else {
+            carsListView.visibility = ListView.VISIBLE
+            val adapter: ArrayAdapter<Car> = ArrayAdapter(this,
+                android.R.layout.simple_list_item_1, cars)
+            carsListView.adapter = adapter
+        }
+    }
+
+    fun addCar(view: View) {
+        val intent = Intent(this, DetailActivity::class.java)
+        startActivity(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        listCars()
     }
 }
