@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.avaliacaomobile.R
+import com.example.avaliacaomobile.adapter.CarModelAdapter
 import com.example.avaliacaomobile.data.dao.CarModelDAO
 import com.example.avaliacaomobile.model.CarModel
 
@@ -19,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var listView: ListView
     lateinit var carDAO: CarModelDAO
     lateinit var searchView: SearchView
+    lateinit var carAdapter: CarModelAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,19 @@ class MainActivity : AppCompatActivity() {
         listView = findViewById(R.id.listView)
         carDAO = CarModelDAO(this)
 
+        val carN1 = CarModel(
+            modelo = "Corolla",
+            marca = "Toyota",
+            ano = "2020"
+        )
+        carDAO.addCarModel(carN1)
+        val carN2 = CarModel(
+            modelo = "Civic",
+            marca = "Honda",
+            ano = "2025"
+        )
+        carDAO.addCarModel(carN2)
+
         listCars()
 
         listView.setOnItemClickListener { parent, view, position, id ->
@@ -45,32 +60,28 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-//        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//                if (listView.contains(query)) {
-//                    listAdapter.filter.filter(query)
-//                } else {
-//                    Toast.makeText(this@MainActivity, "Sem resultados.", Toast.LENGTH_LONG).show()
-//                }
-//                return false
-//            }
-//
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                listAdapter.filter.filter(newText)
-//                return false
-//            }
-//        })
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                carAdapter.filter.filter(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                carAdapter.filter.filter(newText)
+                return true
+            }
+        })
+
     }
 
     private fun listCars() {
-        val cars = carDAO.getAllCarModels()
+        val cars = carDAO.getAllCarModels().toMutableList()
         if(cars.isEmpty()) {
             listView.visibility = ListView.GONE
         } else {
             listView.visibility = ListView.VISIBLE
-            val adapter: ArrayAdapter<CarModel> = ArrayAdapter(this,
-                android.R.layout.simple_list_item_1, cars)
-            listView.adapter = adapter
+            carAdapter = CarModelAdapter(this, cars)
+            listView.adapter = carAdapter
         }
     }
 
